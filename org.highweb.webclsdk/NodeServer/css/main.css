@@ -1,0 +1,52 @@
+html,
+body{
+    margin: 0;
+    padding: 10px 20px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 17px
+}
+.chatbox{}
+.wrapper{
+    margin: 10px 0 0;
+    text-align: center
+}
+.data-input,
+.console{
+    border: 1px solid #d0d0d0;
+    font-size: inherit;
+    outline-color: #8D6E63
+}
+.data-input{
+    width: 80%;
+    height: 40px
+}
+.button{
+    width: 15%;
+    height: 40px;
+    border: none;
+    background-color: #A1887F;
+    font-size: inherit;
+    outline: none
+}
+.button:hover{
+    background-color: #BCAAA4
+}
+.button:active{
+    background-color: #8D6E63
+}
+.describe{
+
+}
+
+.console{
+    width: 96%;
+    height: 50vh;
+    cursor: unset;
+    resize: none
+}
+@media (max-width: 430px){
+    html,
+    body{
+        font-size: 12px
+    }
+}

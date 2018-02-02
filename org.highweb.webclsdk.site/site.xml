@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.highweb.webclsdk.feature_2.0.4.201802020932.jar" id="org.highweb.webclsdk.feature" version="2.0.4.201802020932">
+      <category name="org.highweb.webclsdk"/>
+   </feature>
+   <category-def name="org.highweb.webclsdk" label="WebCL SDK"/>
+</site>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.highweb.webclsdk.feature"
+      label="High WebTool WebCL SDK"
+      version="2.0.4.qualifier"
+      provider-name="MUTECSOFT"
+      plugin="org.highweb.webclsdk">
+
+   <plugin
+         id="org.highweb.webclsdk"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sender</title>
+<link rel='stylesheet' href='css/main.css'>
+</head>
+<body>
+<section id="chatbox" class="chatbox">
+    <div class="wrapper">
+        <input id="room-name" class="data-input" value="HIGHWEB">
+        <button id="join-button" class="button">Join</button>
+    </div>
+    <div class="wrapper">
+        <input id="send-data" class="data-input" disabled>
+        <button id="send-button" class="button">Send</button>
+    </div>
+    <div class="wrapper">
+        <p class="describe">Console</p>
+        <textarea id="console" class="console" disabled></textarea>
+    </div>
+</section>
+</body>
+<script src='socket.io/socket.io.js'></script>
+<script src="js/main.js"></script>
+<script>
+
+const roomInput = document.getElementById('room-name');
+const rommTitle = roomInput.value.trim();
+const dataInput = document.getElementById('send-data');
+
+const joinButton = document.getElementById('join-button');
+const joinEvent = () =>{ 
+    roomTitle = roomInput.value.trim();
+    if(roomTitle){ 
+        roomInput.disabled = true;
+        socket.emit('create or join', roomTitle);
+    }else{
+        log.error("접속할 채널을 입력해주세요.");
+        roomInput.focus();
+    }
+};
+joinEvent();
+joinButton.onclick = joinEvent;
+
+const sendButton = document.getElementById('send-button');
+sendButton.onclick = () => {
+    let data = dataInput.value.trim();
+    if(data){
+        let date = new Date().getTime();
+        log.info(`Sended '${date}, ${data}'`);
+        socket.emit('message', roomTitle, JSON.stringify({date:date, data:data}));
+    }else{
+        log.error("전송할 내용을 입력해주세요.");
+        dataInput.focus();
+    }
+};
+
+socket.on('sended',(data)=>{
+    let date = new Date().getTime();
+    let str = `Sended Send Command at ${date}.`;
+    socket.emit('info','SEND/'+str);
+    log.info(str);
+    dataInput.text = data;
+    socket.emit('message', roomTitle, JSON.stringify({date, data}));
+    str = `Sended '${date}, ${data}'`;
+    socket.emit('info','SEND/'+str);
+    log.info(str);
+});
+
+
+</script>
+</html>

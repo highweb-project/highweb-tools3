@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reciver</title>
+    <link rel='stylesheet' href='css/main.css'>
+</head>
+<body>
+<section id="chatbox" class="chatbox">
+    <div class="wrapper">
+        <input id="room-name" class="data-input" disabled value="HIGHWEB">
+        <button id="join-button" class="button">Join</button>
+    </div>
+    <div class="wrapper">
+        <p class="describe">Console</p>
+        <textarea id="console" class="console" disabled></textarea>
+    </div>
+</section>
+</body>
+<script src='socket.io/socket.io.js'></script>
+<script src="js/main.js"></script>
+<script>
+const roomInput = document.getElementById('room-name');
+
+const joinButton = document.getElementById('join-button');
+const joinEvent = () =>{ 
+    let roomTitle = roomInput.value.trim();
+    if(roomTitle){ 
+        socket.emit('create or join', roomTitle);
+    }else{
+        log.error("접속할 채널을 입력해주세요.");
+        roomInput.focus();
+    }
+};
+joinEvent();
+joinButton.onclick = joinEvent;
+
+socket.on('message', data=>{
+    data = JSON.parse(data);
+    let date = new Date().getTime();
+    log.info(`Send Time: ${data.date}, Recive Time: ${date}, RTT: ${date - data.date}(ms)`);
+    log.info(`Recived Data: ${data.data}`);
+    socket.emit('info',`RECIVE/Recive Time: ${date}, RTT: ${date - data.date}(ms), Recived Data: ${data.data}`);
+    socket.emit('end');
+});
+
+
+</script>
+</html>
