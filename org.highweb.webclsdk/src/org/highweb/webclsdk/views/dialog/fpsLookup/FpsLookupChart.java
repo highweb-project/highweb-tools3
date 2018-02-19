@@ -1,4 +1,4 @@
-package org.highweb.webclsdk.views;
+package org.highweb.webclsdk.views.dialog.fpsLookup;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -9,7 +9,7 @@ import java.util.Date;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.highweb.webclsdk.views.FpsLookupView.Device;
+import org.highweb.webclsdk.views.dialog.fpsLookup.FpsLookupView.Device;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;

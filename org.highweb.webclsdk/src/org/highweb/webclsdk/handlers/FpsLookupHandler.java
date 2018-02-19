@@ -3,7 +3,7 @@ package org.highweb.webclsdk.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
+import org.highweb.webclsdk.views.dialog.fpsLookup.FpsLookupView;
 
 public class FpsLookupHandler extends AbstractHandler {
 
@@ -13,12 +13,12 @@ public class FpsLookupHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		// TODO Auto-generated method stub
 		try {
-			HandlerUtil.getActiveWorkbenchWindowChecked(event).getActivePage().showView("org.highweb.webclsdk.views.FpsLookupView");
-		} catch(Exception e) {
-			e.printStackTrace();
+			new FpsLookupView(null).open();
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
+		
 		return null;
 	}
 

@@ -1,6 +1,8 @@
 package org.highweb.webclsdk.views.dialog;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
@@ -26,7 +28,11 @@ public class DeviceSelectDialog extends Dialog implements EventEmitter.ShellClos
 	
 	public DeviceSelectDialog(Shell parent, List<String> ids) {
 		super(parent);
-		this.ids = ids;
+		
+		final String ipRegex = "^([0-9]{1,3})(\\.([0-9]{1,3})){3}:([1-9]{1,4})$";
+		this.ids = new ArrayList<>();
+		for(String str : ids)
+			if(Pattern.matches(ipRegex, str)) this.ids.add(str);
 	}
 
 	@Override
@@ -72,7 +78,6 @@ public class DeviceSelectDialog extends Dialog implements EventEmitter.ShellClos
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				selected_ID = table.getSelection()[0].getText();
-				System.out.println(selected_ID);
 			}
 			
 			@Override

@@ -38,6 +38,7 @@ public class EventEmitter {
 	
 	public void callShellCloseEvnet()
 	{
+		System.out.println(shellCloseList.size());
 		for(ShellCloseEvent event : shellCloseList)
 			event.shellClose();
 	}

@@ -1,4 +1,4 @@
-package org.highweb.webclsdk.views.dialog;
+package org.highweb.webclsdk.views.dialog.multiExecutor;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,19 +21,18 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.highweb.webclsdk.preferences.WebCLSDKPreferencePage;
+import org.highweb.webclsdk.views.commons.ADBSendCMD;
 
 public class MultiExecutorFunction extends Dialog{
 	
 	private final String PROJECT_PATH = System.getProperty("user.dir") + File.separator + "NodeServer";
 	private final NodeSever nodeServer;
 	private ConsoleTable console;
-	private final ADBSendCMD adSendCMD;
 	private final SendData sendData;
 	
 	public MultiExecutorFunction(Shell parent) {
 		super(parent);
 		nodeServer = new NodeSever();
-		adSendCMD = new ADBSendCMD();
 		sendData = new SendData();
 	}
 	
@@ -53,6 +52,15 @@ public class MultiExecutorFunction extends Dialog{
 	
 	protected boolean NodeServerStop() throws IOException, InterruptedException {
 		return nodeServer.NodeServerStop();
+	}
+	
+	protected void setMessage(String [] message){
+		switch (message[0]) {
+		case "SUCCESS": setInfo(message[1]); break;
+		case "ERROR": setError(message[1]); break;
+		default:
+			break;
+		}
 	}
 	
 	protected void setInfo(String message){
@@ -83,8 +91,8 @@ public class MultiExecutorFunction extends Dialog{
 				console.setRecive(message);
 	}
 	
-	protected String commandADB(String ...command){
-		return adSendCMD.commandADB(command);
+	protected String[] commandADB(String ...command){
+		return ADBSendCMD.getInstance().commandADB(command);
 	}
 	
 	protected void sendText(String address, String text) {
@@ -192,65 +200,6 @@ public class MultiExecutorFunction extends Dialog{
 			setTopIndex(getItemCount() - 1);
 		}
 	}
-	
-	public class ADBSendCMD {
-		private final String ADB_PATH =  WebCLSDKPreferencePage.getAndroidSDKDirectory() + File.separator + "platform-tools" + File.separator + "adb.exe";
-		private String[] commands;
-		private ExecutorService executorService;
-		
-		public ADBSendCMD() {
-			 executorService = Executors.newSingleThreadExecutor();
-		}
-		
-		public String commandADB(String[] command) {
-			
-			commands = new String [command.length + 3];
-			commands[0] = "cmd";
-			commands[1] = "/C";
-			commands[2] = ADB_PATH;
-			for(int i=0; i<command.length; i++) 
-				commands[i+3] = command[i];
-			
-			try {
-				Future<String> future = executorService.submit(new Callable<String>() {
-					@Override
-					public String call() throws Exception {
-						Process process = null;
-						String result = "";
-						try {
-							ProcessBuilder pb = new ProcessBuilder(commands);
-							process = pb.start();
-							
-							BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-							String logline;
-							while((logline = in.readLine()) != null){
-			        			if(logline != null)
-			        				result += logline;
-			        		}
-							
-						} catch (IOException e) {
-							setError(e.getMessage());
-							return null;
-						}
-						finally {
-							if(process != null)
-								process.destroy();
-						}
-						return result;
-					}
-				});
-				
-				return future.get();
-			} catch (ExecutionException e) {
-				setError(e.getMessage());
-				return null;
-			} catch (InterruptedException e2){
-				setError(e2.getMessage());
-				return null;
-			}
-		}
-	}
-	
 	
 	public class SendData{
 		

@@ -1,31 +1,20 @@
-package org.highweb.webclsdk.views;
+package org.highweb.webclsdk.views.dialog.fpsLookup;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Layout;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.ui.part.*;
 import org.highweb.webclsdk.preferences.WebCLSDKPreferencePage;
+import org.highweb.webclsdk.views.commons.EventEmitter;
 import org.highweb.webclsdk.views.commons.SWTApi;
 import org.highweb.webclsdk.views.dialog.DeviceSelectDialog;
-import org.highweb.webclsdk.views.dialog.MultiExecutorDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -43,15 +32,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.VerifyEvent;
@@ -72,7 +59,7 @@ import org.eclipse.swt.events.VerifyListener;
  * <p>
  */
 
-public class FpsLookupView extends ViewPart {
+public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEvent{
 
     /**
      * The ID of the view as specified by the extension.
@@ -84,9 +71,8 @@ public class FpsLookupView extends ViewPart {
 
     // private TableViewer viewer;
     private FpsLookupChart fpsLookupChart;
-
-    private List<String> DEVICES_ID;
-    private List<Device> Devices;
+    
+    private Shell shell;
     
     /*
      * The content provider class is responsible for providing objects to the
@@ -122,23 +108,47 @@ public class FpsLookupView extends ViewPart {
         }
     }
 
-    // class NameSorter extends ViewerSorter {
-    // }
-
-    /**
-     * The constructor.
-     */
-    public FpsLookupView() {
-    	DEVICES_ID = new ArrayList<>();
-    	Devices = new ArrayList<>();
+    public FpsLookupView(Shell parent) {
+    	super(parent);
+    	EventEmitter.getInstance().addShellCloseEvent(this);
     }
-
-    /**
-     * This is a callback that will allow us to create the viewer and initialize
-     * it.
-     */
-    public void createPartControl(Composite parent) {
-    	parent.setLayout(new GridLayout(1, true));
+    
+    @Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText("Muti Device Execution Property");
+		newShell.setSize(800, 600);
+		
+		shell= newShell;
+	}
+	
+	@Override
+	protected void setShellStyle(int newShellStyle) {
+		setBlockOnOpen(false);
+	}
+	
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) 
+	{
+		GridLayout layout = (GridLayout)parent.getLayout();
+		layout.marginHeight = 0;
+	}
+	
+	@Override
+	public boolean close() {
+		return super.close();
+	}
+	
+	@Override
+	public void shellClose() {
+		EventEmitter.getInstance().deleteShellCloseEvent(this);
+		super.close();
+	}
+	
+	@Override
+	protected Control createDialogArea(Composite parent) 
+	{
+		parent.setLayout(new GridLayout(1, true));
     	
     	ScrolledComposite sc = new ScrolledComposite(parent, SWT.NONE | SWT.H_SCROLL | SWT.V_SCROLL);
         sc.setLayout(new GridLayout(1, true));
@@ -147,15 +157,16 @@ public class FpsLookupView extends ViewPart {
         SWTApi.setLayoutData(sc, GridData.FILL, GridData.FILL, true, true, 1, 1, 0, 0);
         
     	Composite rootCompo = new Composite(sc, SWT.NONE);
-    	rootCompo.setLayout(new GridLayout(2, true));
+    	rootCompo.setLayout(new GridLayout(1, true));
     	SWTApi.setLayoutData(rootCompo, GridData.FILL, GridData.FILL, true, true, 1, 1, 0, 0);
         
     	createViewer(rootCompo);
-        createViewer(rootCompo);
         
         sc.setContent(rootCompo);
         sc.setMinSize(100, SWT.DEFAULT);
-    }
+        
+        return parent;
+	}
     
     private void createViewer(Composite parent) {
     	
@@ -266,7 +277,6 @@ public class FpsLookupView extends ViewPart {
         FpsLookupChart fpsLookupChart = new FpsLookupChart(30000, compositeBottom, device);
         fpsLookupChart.init();
         device.addFpsLookupChar(fpsLookupChart);
-        Devices.add(device);
     }
 
     protected String openSafeSaveDialog(Shell shell) {
@@ -309,17 +319,6 @@ public class FpsLookupView extends ViewPart {
         }
 
         return fileName;
-    }
-
-    @Override
-    public void init(IViewSite viewSite) throws PartInitException {
-        super.init(viewSite);
-    }
-
-    @Override
-    public void dispose() {
-    	for(Device d : Devices) d.dispose();
-        super.dispose();
     }
 
     private void showMessage(Shell shell, String title, String message) {
@@ -375,12 +374,11 @@ public class FpsLookupView extends ViewPart {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
                     // TODO Auto-generated method stub
-                    IWorkbenchWindow window = FpsLookupView.this.getViewSite().getWorkbenchWindow();
-                    if (window.getShell().isDisposed())
+                    if (shell.isDisposed())
                         return null;
                     String androidPath = WebCLSDKPreferencePage.getAndroidSDKDirectory();
                     if (androidPath == null || androidPath.isEmpty()) {
-                        showMessage(window.getShell(), "HighWeb Warning - Android SDK Path",
+                        showMessage(shell, "HighWeb Warning - Android SDK Path",
                                 "Android SDK 寃쎈줈媛� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
                                         + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK 寃쎈줈瑜� �꽭�똿�빐 二쇱꽭�슂");
                         return null;
@@ -484,14 +482,6 @@ public class FpsLookupView extends ViewPart {
 	    	@Override
 	    	public void widgetDefaultSelected(SelectionEvent e) {}
 	    }
-	    
-	    protected boolean addDivce(String device){
-			if(!DEVICES_ID.contains(device)){
-				DEVICES_ID.add(device);
-				return true;
-			}else
-				return false;
-		}
 		
 		public ConnectionEvent getConnectionEvent(Label labelID, Label labelModel, Label labelVersion){
 			return new ConnectionEvent(labelID, labelModel, labelVersion);
@@ -510,10 +500,9 @@ public class FpsLookupView extends ViewPart {
 			
 	    	@Override
 	    	public void widgetSelected(SelectionEvent e) {
-	    		IWorkbenchWindow window = FpsLookupView.this.getViewSite().getWorkbenchWindow();
 		        String androidPath = WebCLSDKPreferencePage.getAndroidSDKDirectory();
 		        if (androidPath == null || androidPath.isEmpty()) {
-	                showMessage(window.getShell(), "HighWeb Warning - Android SDK Path", "Android SDK 寃쎈줈媛� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
+	                showMessage(shell, "HighWeb Warning - Android SDK Path", "Android SDK 寃쎈줈媛� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
 	                        + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK 寃쎈줈瑜� �꽭�똿�빐 二쇱꽭�슂");
 		            return;
 		        }
@@ -581,7 +570,7 @@ public class FpsLookupView extends ViewPart {
 
 			            if (model.contains("error") || version.contains("error") || model.contains("daemon")
 			                    || version.contains("daemon")) {
-			            	showMessage(window.getShell(), "FPS Lookup", model);
+			            	showMessage(shell, "FPS Lookup", model);
 			                if (adbProcess != null) {
 			                    adbProcess.destroy();
 			                }
@@ -676,7 +665,6 @@ public class FpsLookupView extends ViewPart {
 	    private class SaveEvent implements SelectionListener {
 	    	@Override
 	    	public void widgetSelected(SelectionEvent e) {
-	    		Shell shell = e.widget.getDisplay().getActiveShell();
 	            StringBuilder sbFpsFlopsData = fpsLookupChart.getFpsFlopsData();
 	            if (sbFpsFlopsData.length() == 0) {
 	                showMessage(shell, "Save Fps/Flops", "There is no DATA!");

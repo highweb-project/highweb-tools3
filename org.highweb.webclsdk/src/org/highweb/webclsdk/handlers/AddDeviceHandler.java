@@ -1,21 +1,17 @@
 package org.highweb.webclsdk.handlers;
 
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Display;
-import org.highweb.webclsdk.views.dialog.multiExecutor.MultiExecutorDialog;
+import org.highweb.webclsdk.views.dialog.DeviceAddDialog;
 
-public class MultiExcutorHandler extends AbstractHandler {
-
-	public MultiExcutorHandler() {}
+public class AddDeviceHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException{
 		
 		try {
-			new MultiExecutorDialog(Display.getDefault().getActiveShell()).open();
+			new DeviceAddDialog(null).open();
 		} catch (Exception e) {
 			// TODO: handle exception
 		}

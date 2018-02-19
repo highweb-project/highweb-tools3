@@ -1,4 +1,4 @@
-package org.highweb.webclsdk.views;
+package org.highweb.webclsdk.views.dialog.fpsLookup;
 
 import org.eclipse.swt.widgets.Composite;
 

@@ -379,5 +379,4 @@ public class KernelSourceOutlineView extends ContentOutlinePage {
     // public void setFocus() {
     // viewer.getControl().setFocus();
     // }
-
 }

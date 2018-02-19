@@ -1,4 +1,4 @@
-package org.highweb.webclsdk.views.dialog;
+package org.highweb.webclsdk.views.dialog.multiExecutor;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -216,14 +216,14 @@ public class MultiExecutorDialog extends MultiExecutorFunction implements EventE
 							control.setText(STOP);
 							state.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_GREEN));
 							state.setText(CONNECTION);
-							setInfo("Started Node Server PORT:8080!");
-							setInfo(commandADB("tcpip", ADB_PORT));	//adb tcpip mode로 실행
+							setInfo("Started Node Server PORT:2018!");
+							setMessage(commandADB("tcpip", ADB_PORT));	//adb tcpip mode로 실행
 						}
 						break;
 					case STOP:
 						if(NodeServerStop()){
 							setInfo("Stoped Node Server PORT:8080!");
-							setInfo(commandADB("kill-server"));
+							setMessage(commandADB("kill-server"));
 							EventEmitter.getInstance().callViewInitEevent();
 						}
 						break;
@@ -290,7 +290,7 @@ public class MultiExecutorDialog extends MultiExecutorFunction implements EventE
 			switch (((Button)e.getSource()).getText().trim()){
 				case DETACT:
 					IP =  ipText.getText().trim()+":" + ADB_PORT;
-					setInfo(commandADB("connect", IP));
+					setMessage(commandADB("connect", IP));
 					
 					btnDetact.setText(RELEASE);
 					
@@ -301,7 +301,7 @@ public class MultiExecutorDialog extends MultiExecutorFunction implements EventE
 					
 				break;
 				case RELEASE:
-					setInfo(commandADB("disconnect", IP));
+					setMessage(commandADB("disconnect", IP));
 					
 					btnDetact.setText(DETACT);
 					
