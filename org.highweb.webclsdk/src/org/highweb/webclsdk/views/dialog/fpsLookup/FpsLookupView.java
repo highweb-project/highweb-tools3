@@ -356,6 +356,8 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
     	private FpsLookupChart fpsLookupChart;
     	private boolean isConnected;
     	
+    	private String connectedID;
+    	
     	private Process adbProcess;
     	private Job adbJob;
     	
@@ -385,7 +387,7 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
                     }
 
                     String[] args = new String[] {
-                            androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "logcat", "chromium:I" };
+                            androidPath + File.separator + "platform-tools" + File.separator + "adb", "-s", connectedID, "shell", "logcat", "chromium:I" };
                     BufferedReader in = null;
 
                     ProcessBuilder pBuilder = new ProcessBuilder(args);
@@ -508,7 +510,7 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 		        }
 		        
 		        String[] argsFroUSBMode = new String[] {
-		        	androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "usb"
+		        	androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "tcpip"
 		        };
 		        
 		        String[] argsForDeviceId = new String[] {
@@ -520,7 +522,7 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 		        ProcessBuilder pBuilder = null;
 		        Process process = null;
 		        try {
-		        	//USB MODE
+		        	//TCPIP MODE
 		        	pBuilder = new ProcessBuilder(argsFroUSBMode);
 		            pBuilder.redirectErrorStream(true);
 		            process = pBuilder.start();
@@ -542,14 +544,14 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 		            DeviceSelectDialog dialog = new DeviceSelectDialog(Display.getDefault().getActiveShell(), ids);
 		            if(dialog.open() == 0){
 		            	
-		            	id = dialog.getSelected_ID();
-		            	if(id == null) return;
+		            	connectedID = dialog.getSelected_ID();
+		            	if(connectedID == null) return;
 			            
 			            String[] argsForDeviceModel = new String[] {
-		    	                androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "-s", id, "shell", "getprop",
+		    	                androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "-s", connectedID, "shell", "getprop",
 		    	                "ro.product.model" };
 		    	        String[] argsForDeviceVersion = new String[] {
-		    	                androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "-s", id, "shell", "getprop",
+		    	                androidPath + File.separator + "platform-tools" + File.separator + "adb.exe", "-s", connectedID, "shell", "getprop",
 		    	                "ro.build.version.release" };
 			        	
 			            pBuilder = new ProcessBuilder(argsForDeviceModel);
@@ -577,7 +579,7 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 			                return;
 			            }
 			            
-			            labelID.setText(id);
+			            labelID.setText(connectedID);
 			            deviceModel = model;
 			            labelModel.setText(model);
 			            deviceVersion = version;
@@ -622,26 +624,19 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 	    	@Override
 	    	public void widgetSelected(SelectionEvent e) {
 	    		final String text = btnStartAndStop.getText().trim();
-	    		new Thread(new Runnable() {
-
-	                @Override
-	                public void run() {
-	                	if(isConnected){
-	                		switch (text) {
-							case START:
-								adbJob.schedule();
-								setUpdateState(true);
-								break;
-							case STOP:
-								adbJob.sleep();
-								setUpdateState(false);
-								break;
-							}
-						    
-						}
-	                }
-
-	            }).start();
+            	if(isConnected){
+            		switch (text) {
+					case START:
+						adbJob.schedule();
+						setUpdateState(true);
+						break;
+					case STOP:
+						adbJob.sleep();
+						setUpdateState(false);
+						break;
+					}
+				    
+				}
 	    	}
 	    	
 	    	@Override

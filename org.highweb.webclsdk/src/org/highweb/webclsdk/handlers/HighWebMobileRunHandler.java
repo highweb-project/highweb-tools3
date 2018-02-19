@@ -77,7 +77,7 @@ public class HighWebMobileRunHandler extends AbstractHandler {
 			}
 	        
 	        String[] argsFroUSBMode = new String[] {
-	        		androidSDKDirectory + File.separator + "platform-tools" + File.separator + "adb.exe", "usb"
+	        		androidSDKDirectory + File.separator + "platform-tools" + File.separator + "adb.exe", "tcpip"
 		        };
 		        
 	        String[] argsForDeviceId = new String[] {
@@ -88,7 +88,7 @@ public class HighWebMobileRunHandler extends AbstractHandler {
 	        ProcessBuilder pBuilder = null;
 	        Process process = null;
 	        try {
-	        	//USB MODE
+	        	//TCPIP MODE
 	        	pBuilder = new ProcessBuilder(argsFroUSBMode);
 	            pBuilder.redirectErrorStream(true);
 	            process = pBuilder.start();
