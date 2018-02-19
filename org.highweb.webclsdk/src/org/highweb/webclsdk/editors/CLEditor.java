@@ -100,7 +100,7 @@ public class CLEditor extends TextEditor {
     public void initTimer() {
         System.out.println("initTimer()");
         if (timerTask != null) {
-            timerTask.cancel(); // 占쏙옙占쎌뵠�솒��ask�몴占� timer 占쎄괠占쎈퓠占쎄퐣 筌욑옙占쎌뜖甕곌쑬�뵛占쎈뼄
+            timerTask.cancel(); // �뜝�룞�삕�뜝�럩逾좑옙�넂占쏙옙ask占쎈ご�뜝占� timer �뜝�럡愿졾뜝�럥�뱺�뜝�럡�맋 嶺뚯쉻�삕�뜝�럩�쐳�뵓怨뚯뫊占쎈탿�뜝�럥堉�
             timerTask = null;
         }
         timerTask = new TimerTask() {
@@ -112,8 +112,8 @@ public class CLEditor extends TextEditor {
             }
         };
         if (timer != null) {
-            timer.cancel(); // 占쎈뮞�놂옙鴉딇겎ask�⑨옙 占쏙옙占쎌뵠�솒紐껓옙占� �뿆�뫁�꺖占쎈립占쎈뼄.
-            timer.purge(); // task占쎄괠占쎌벥 筌뤴뫀諭� task�몴占� 占쎌젫椰꾧퀬釉놂옙�뼄.
+            timer.cancel(); // �뜝�럥裕욑옙�냲�삕辱됰뵁寃럂sk占썩뫅�삕 �뜝�룞�삕�뜝�럩逾좑옙�넂筌뤾퍜�삕�뜝占� 占쎈퓛占쎈쳛占쎄틬�뜝�럥由썲뜝�럥堉�.
+            timer.purge(); // task�뜝�럡愿졾뜝�럩踰� 嶺뚮ㅄ維�獄�占� task占쎈ご�뜝占� �뜝�럩�젷濾곌쑨�ч뇡�냲�삕占쎈펲.
             timer = null;
         }
         timer = new Timer();
@@ -185,9 +185,9 @@ public class CLEditor extends TextEditor {
                     IPath statePath = Platform.getStateLocation(bundle);
                     String cparserPath = "utils" + File.separator + "cparser" + File.separator + "cparser.exe";
                     String sourcePath = "";
-                    // -> job 占쎌몵嚥∽옙 獄쏅떽��疫뀐옙
-                    // -> 占쏙옙占쎌뵠占쎈릅占쎌뵠 筌롫뜆�뀭 占쎈뻻占쎌젎 占쎌몵嚥∽옙 占쏙옙占쎌뵠�솒占�
-                    // -> 占쏙옙占쎌뵠占쎈릅 �굜�뮆媛� 1�룯占� 2�룯占�
+                    // -> job �뜝�럩紐드슖�댙�삕 �뛾�룆�뼺占쏙옙�뼨�먯삕
+                    // -> �뜝�룞�삕�뜝�럩逾졾뜝�럥由끻뜝�럩逾� 嶺뚮∥�쐠占쎈�� �뜝�럥六삣뜝�럩�젍 �뜝�럩紐드슖�댙�삕 �뜝�룞�삕�뜝�럩逾좑옙�넂�뜝占�
+                    // -> �뜝�룞�삕�뜝�럩逾졾뜝�럥由� 占쎄턀占쎈츊揶쏉옙 1占쎈／�뜝占� 2占쎈／�뜝占�
                     // synchronized (CLEditor.syncObj) {
                     IEditorInput editorInput = getEditorInput();
                     if (editorInput instanceof FileEditorInput) {

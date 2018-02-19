@@ -24,19 +24,24 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.highweb.webclsdk.views.commons.SWTApi;
-
+import org.highweb.webclsdk.handlers.MultiExcutorHandler;
 import org.highweb.webclsdk.views.commons.EventEmitter;
 
-public class MultiExecutorDialog extends MultiExecutorFunction implements EventEmitter.ShellCloseEvent{
+public class MultiExecutorDialog extends MultiExecutorFunction {
 
 	private final String LOCAL_IP; 
 	private final String ADB_PORT = "5555";
 	
-	public MultiExecutorDialog(Shell parent) throws UnknownError, UnknownHostException{
+	private MultiExcutorHandler handler;
+	
+	public MultiExecutorDialog(Shell parent, MultiExcutorHandler handler) throws UnknownError, UnknownHostException{
 		super(parent);
+		this.handler = handler;
+		
+		setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE); 
+    	setBlockOnOpen(false);
 		
 		LOCAL_IP = InetAddress.getLocalHost().getHostAddress();
-		EventEmitter.getInstance().addShellCloseEvent(this);
 	}
 	
 	@Override
@@ -44,11 +49,6 @@ public class MultiExecutorDialog extends MultiExecutorFunction implements EventE
 		super.configureShell(newShell);
 		newShell.setText("Muti Device Execution Property");
 		newShell.setSize(800, 600);
-	}
-	
-	@Override
-	protected void setShellStyle(int newShellStyle) {
-		setBlockOnOpen(false);
 	}
 	
 	@Override
@@ -60,15 +60,10 @@ public class MultiExecutorDialog extends MultiExecutorFunction implements EventE
 	
 	@Override
 	public boolean close() {
+		handler.init();
 		return super.close();
 	}
 	
-	@Override
-	public void shellClose() {
-		EventEmitter.getInstance().deleteShellCloseEvent(this);
-		super.close();
-	}
-
 	@Override
 	protected Control createDialogArea(Composite parent) 
 	{

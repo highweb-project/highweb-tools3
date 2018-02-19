@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//src/org/highweb/webclsdk/editors/CLEditor.java=UTF-8
 encoding//src/org/highweb/webclsdk/handlers/HighWebAppBuildHandler.java=UTF-8
 encoding//src/org/highweb/webclsdk/handlers/HighWebAppRunHandler.java=UTF-8
 encoding//src/org/highweb/webclsdk/handlers/HighWebMobileRunHandler.java=UTF-8

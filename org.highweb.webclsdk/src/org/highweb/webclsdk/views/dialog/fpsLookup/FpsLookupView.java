@@ -59,7 +59,7 @@ import org.eclipse.swt.events.VerifyListener;
  * <p>
  */
 
-public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEvent{
+public class FpsLookupView extends Dialog {
 
     /**
      * The ID of the view as specified by the extension.
@@ -110,7 +110,8 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 
     public FpsLookupView(Shell parent) {
     	super(parent);
-    	EventEmitter.getInstance().addShellCloseEvent(this);
+    	setShellStyle(SWT.CLOSE | SWT.MODELESS | SWT.BORDER | SWT.TITLE); 
+    	setBlockOnOpen(false);
     }
     
     @Override
@@ -123,11 +124,6 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 	}
 	
 	@Override
-	protected void setShellStyle(int newShellStyle) {
-		setBlockOnOpen(false);
-	}
-	
-	@Override
 	protected void createButtonsForButtonBar(Composite parent) 
 	{
 		GridLayout layout = (GridLayout)parent.getLayout();
@@ -137,12 +133,6 @@ public class FpsLookupView extends Dialog implements EventEmitter.ShellCloseEven
 	@Override
 	public boolean close() {
 		return super.close();
-	}
-	
-	@Override
-	public void shellClose() {
-		EventEmitter.getInstance().deleteShellCloseEvent(this);
-		super.close();
 	}
 	
 	@Override

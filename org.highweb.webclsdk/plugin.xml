@@ -407,16 +407,15 @@
                   id="org.highweb.webclsdk.menus.highWebAppTerminateCommand"
                   mnemonic="S">
             </command>
+            <separator
+                  name="org.highweb.webclsdk.separator1"
+                  visible="true">
+            </separator>
             <command
-                  commandId="org.highweb.webclsdk.commands.fpsLookupCommand"
-                  id="org.highweb.webclsdk.menus.fpsLookupCommand"
-                  mnemonic="S">
-            </command>
-            <command
-                  commandId="org.highweb.webclsdk.commands.highWebAndroidLocatCommand"
-                  id="org.highweb.webclsdk.menus.highWebAndroidLogcatCommand"
+                  commandId="org.highweb.webclsdk.commands.addDeviceCommand"
+                  id="org.highweb.webclsdk.menus.addDeviceCommand"
                   mnemonic="S"
-                  style="toggle">
+                  style="push">
             </command>
             <command
                   commandId="org.highweb.webclsdk.commands.scrapeWebContentCommand"
@@ -425,14 +424,23 @@
                   style="push">
             </command>
             <command
-                  commandId="org.highweb.webclsdk.commands.multiExcutorCommand"
-                  id="org.highweb.webclsdk.menus.multiExcutorCommand"
+                  commandId="org.highweb.webclsdk.commands.highWebAndroidLocatCommand"
+                  id="org.highweb.webclsdk.menus.highWebAndroidLogcatCommand"
                   mnemonic="S"
-                  style="push">
+                  style="toggle">
+            </command>
+            <separator
+                  name="org.highweb.webclsdk.separator2"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.highweb.webclsdk.commands.fpsLookupCommand"
+                  id="org.highweb.webclsdk.menus.fpsLookupCommand"
+                  mnemonic="S">
             </command>
             <command
-                  commandId="org.highweb.webclsdk.commands.addDeviceCommand"
-                  id="org.highweb.webclsdk.menus.addDeviceCommand"
+                  commandId="org.highweb.webclsdk.commands.multiExcutorCommand"
+                  id="org.highweb.webclsdk.menus.multiExcutorCommand"
                   mnemonic="S"
                   style="push">
             </command>
@@ -488,6 +496,27 @@
                relative="org.eclipse.ui.views.ProblemView">
          </view>
       </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.highweb.webclsdk.product"
+            name="org.highweb.webclsdk.product">
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.e4.ui.workbench.swt.E4Application"
+            name="org.highweb.webclsdk.product">
+      </product>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.eclipse.e4.ui.workbench.swt.E4Application"
+            name="org.highweb.webclsdk.product">
+      </product>
    </extension>
 
 </plugin>

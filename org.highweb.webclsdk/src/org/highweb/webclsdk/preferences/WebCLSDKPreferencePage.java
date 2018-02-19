@@ -123,4 +123,10 @@ public class WebCLSDKPreferencePage
 
 		return httrackDirectory;
 	}
+	
+	@Override
+	public void dispose() {
+		System.out.println("xxxxxxxxxxxxx");
+		super.dispose();
+	}
 }

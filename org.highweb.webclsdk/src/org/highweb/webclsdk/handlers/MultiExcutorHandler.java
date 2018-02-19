@@ -8,6 +8,8 @@ import org.eclipse.swt.widgets.Display;
 import org.highweb.webclsdk.views.dialog.multiExecutor.MultiExecutorDialog;
 
 public class MultiExcutorHandler extends AbstractHandler {
+	
+	private MultiExecutorDialog multiExecutorDialog;
 
 	public MultiExcutorHandler() {}
 
@@ -15,12 +17,21 @@ public class MultiExcutorHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException{
 		
 		try {
-			new MultiExecutorDialog(Display.getDefault().getActiveShell()).open();
+			if(multiExecutorDialog == null){
+				multiExecutorDialog = new MultiExecutorDialog(Display.getDefault().getActiveShell(), this);
+				multiExecutorDialog.open();
+			}else{
+				multiExecutorDialog.getShell().forceActive();
+			}
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
 		
 		return null;
+	}
+	
+	public void init(){
+		multiExecutorDialog = null;
 	}
 
 }
