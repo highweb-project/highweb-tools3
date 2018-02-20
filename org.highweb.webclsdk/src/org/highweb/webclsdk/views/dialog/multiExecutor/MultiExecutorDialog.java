@@ -1,5 +1,6 @@
 package org.highweb.webclsdk.views.dialog.multiExecutor;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.highweb.webclsdk.views.commons.SWTApi;
+import org.highweb.webclsdk.views.dialog.DeviceSelectDialog;
 import org.highweb.webclsdk.handlers.MultiExcutorHandler;
 import org.highweb.webclsdk.views.commons.EventEmitter;
 
@@ -138,6 +140,7 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 	private void createExecutor(Composite parent, String deviceTitle)
 	{
 		Text textDeviceIP = new Text(parent, SWT.CENTER | SWT.BORDER);
+		textDeviceIP.setEnabled(false);
 		SWTApi.setLayoutData(textDeviceIP, GridData.FILL, SWT.NONE, true, false, 1, 1, 0, 0);
 		
 		Label deviceState = new Label(parent, SWT.CENTER);
@@ -145,7 +148,7 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 		SWTApi.setLayoutData(deviceState, GridData.FILL, SWT.NONE, true, false, 1, 1, 0, 0);
 		
 		Button detectBtn = new Button(parent, SWT.NONE);
-		detectBtn.setText("Detach");
+		detectBtn.setText("Detect");
 		SWTApi.setLayoutData(detectBtn, GridData.FILL, SWT.NONE, false, false, 1, 1, 0, 0);
 		
 		Combo comboProperty = new Combo(parent, SWT.READ_ONLY);
@@ -236,12 +239,12 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 
 		private Text ipText;
 		private Combo property;
-		private Button btnDetact;
+		private Button btnDetect;
 		private Button btnConn;
 		private Label state;
 		
-		private final String DETACT = "Detact";
-		private final String DETACT_STATE = "Detacted";
+		private final String DETECT = "Detect";
+		private final String DETECT_STATE = "Detacted";
 		private final String RELEASE = "Release";
 		private final String RELEASE_STATE = "Released";
 		private final String CONNECTION = "Connection";
@@ -251,11 +254,11 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 		
 		private String IP;
 		
-		public DetactEvent(Label state, Text ipText, Combo property, Button btnDetact, Button btnConn) {
+		public DetactEvent(Label state, Text ipText, Combo property, Button btnDetect, Button btnConn) {
 			this.state = state;
 			this.ipText = ipText;
 			this.property = property;
-			this.btnDetact = btnDetact;
+			this.btnDetect = btnDetect;
 			this.btnConn = btnConn;
 			
 			EventEmitter.getInstance().addViewInitEevent(this);
@@ -265,11 +268,11 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 		
 		@Override
 		public void init(){
-			btnDetact.setText(DETACT);
+			btnDetect.setText(DETECT);
 			state.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
 			state.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
 			state.setFont(new Font(null, "Arial", 11, SWT.BOLD));
-			state.setText(DETACT_STATE); 
+			state.setText(DETECT_STATE); 
 		
 			btnConn.setText(CONNECTION);
 			btnConn.setEnabled(false);
@@ -283,22 +286,36 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			switch (((Button)e.getSource()).getText().trim()){
-				case DETACT:
-					IP =  ipText.getText().trim()+":" + ADB_PORT;
-					setMessage(commandADB("connect", IP));
+				case DETECT:
 					
-					btnDetact.setText(RELEASE);
-					
-					btnConn.setEnabled(true);
-					
-					state.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_GREEN));
-					state.setText(DETACT_STATE);
-					
+					String [] devices = commandADB("devices");
+					if(devices[0].equals("SUCCESS")){
+						List<String> ids = new ArrayList<>();
+						for(String str : devices[1].split("/"))
+							ids.add(str.split("\t")[0]);
+						
+						DeviceSelectDialog dialog = new DeviceSelectDialog(Display.getDefault().getActiveShell(), ids);
+						if(dialog.open() == 0){
+							IP =  dialog.getSelected_ID();
+							if(IP != null){
+								ipText.setText(IP);
+								
+								setMessage(commandADB("connect", IP));
+								
+								btnDetect.setText(RELEASE);
+								
+								btnConn.setEnabled(true);
+								
+								state.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_GREEN));
+								state.setText(DETECT_STATE);
+							}
+						}
+					}
 				break;
 				case RELEASE:
 					setMessage(commandADB("disconnect", IP));
 					
-					btnDetact.setText(DETACT);
+					btnDetect.setText(DETECT);
 					
 					btnConn.setEnabled(false);
 					

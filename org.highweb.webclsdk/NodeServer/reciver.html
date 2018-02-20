@@ -28,7 +28,7 @@ const joinEvent = () =>{
     if(roomTitle){ 
         socket.emit('create or join', roomTitle);
     }else{
-        log.error("접속할 채널을 입력해주세요.");
+        log.error("�젒�냽�븷 梨꾨꼸�쓣 �엯�젰�빐二쇱꽭�슂.");
         roomInput.focus();
     }
 };
@@ -46,4 +46,4 @@ socket.on('message', data=>{
 
 
 </script>
-</html>
+</html>1

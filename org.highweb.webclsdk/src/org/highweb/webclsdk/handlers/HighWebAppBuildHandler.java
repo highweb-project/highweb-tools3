@@ -2,10 +2,13 @@ package org.highweb.webclsdk.handlers;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
@@ -29,6 +32,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -63,152 +68,218 @@ public class HighWebAppBuildHandler extends AbstractHandler {
 			IProject project = (IProject) ((IAdaptable) firstSegmentObj).getAdapter(IProject.class);
 			String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			//File projectDir = new File(workspacePath + File.separator + project.getName());
-			File projectDir = new File(project.getLocation().toString());
 			
-			String pythonPath = WebCLSDKPreferencePage.getPythonPath();
-			if(pythonPath == null || pythonPath.isEmpty()) {
-				MessageDialog.openWarning(window.getShell(), "HighWeb Warning - Python Path",
-                        "Python 寃쎈줈媛� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
-                        + "Window - Preferences - HighWeb Tool �뿉�꽌 Python 寃쎈줈瑜� �꽭�똿�빐 二쇱꽭�슂");
-				return null;
+			
+			Job job;
+			switch (project.getName()) {
+				case "Sender": job = nodeBuild("sender.html", project); break;
+				case "Reciver": job = nodeBuild("reciver.html", project); break;
+				default: job = generalBuild(project); break;
 			}
 			
-			String antDirectory = WebCLSDKPreferencePage.getAntDirectory();
-			if(antDirectory == null || antDirectory.isEmpty()) {
-				MessageDialog.openWarning(window.getShell(), "HighWeb Warning - Ant Directory",
-                        "Ant �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
-                        + "Window - Preferences - HighWeb Tool �뿉�꽌 Ant �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
-				return null;
-			}
-
-			String androidSDKDirectory = WebCLSDKPreferencePage.getAndroidSDKDirectory();
-			if(androidSDKDirectory == null || androidSDKDirectory.isEmpty()) {
-				MessageDialog.openWarning(window.getShell(), "HighWeb Warning - Android SDK Directory",
-                        "Android SDK �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
-                        + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
-				return null;
-			}
-
-			String crosswalkDirectory = WebCLSDKPreferencePage.getCrosswalkDirectory();
-			if(crosswalkDirectory == null || crosswalkDirectory.isEmpty()) {
-				MessageDialog.openWarning(window.getShell(), "HighWeb Warning - Android SDK Directory",
-                        "Android SDK �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
-                        + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
-				return null;
-			}
-
-			final Job job = new Job("Build HighWeb Application") {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					// TODO Auto-generated method stub
-					monitor.beginTask("Build HighWeb Application", 4);
-					String path = System.getenv("path");
-					String tempPath = new String(path);
-					StringBuffer pathbuf = new StringBuffer(path);
-					if(!path.endsWith(";")) {
-						pathbuf.append(';');
-					}
-					pathbuf.append(antDirectory + File.separator + "bin")
-						.append(';').append(androidSDKDirectory + File.separator + "tools")
-						.append(';').append(androidSDKDirectory + File.separator + "platform-tools");
-					path = pathbuf.toString();
-					monitor.worked(1);
-
-					String manifestPath = projectDir.getAbsolutePath() + File.separator + "WebContent" + File.separator + "manifest.json";
-					FileReader manifestReader = null;
-					try {
-						manifestReader = new FileReader(new File(manifestPath));
-						char[] cbuf = new char[32];
-						StringBuffer sb = new StringBuffer();
-						int i;
-						while((i = manifestReader.read(cbuf)) != -1) {
-							sb.append(cbuf, 0, i);
-						}
-
-						JSONObject manifestObj = new JSONObject(sb.toString());
-						String packagename = (String) manifestObj.get("package");
-
-						String[] args = new String[] {
-								"cmd.exe",
-								"/C",
-								pythonPath,
-								crosswalkDirectory + File.separator + "make_apk.py",
-								"--package=" + packagename,
-								"--manifest=WebContent/manifest.json"
-						};
-						MessageConsole console = new MessageConsole("HighWeb Application Build", null);
-						ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {console});
-						ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);
-						MessageConsoleStream stream = console.newMessageStream();
-						ProcessBuilder pBuilder = new ProcessBuilder(args);
-						Map<String,String> env = pBuilder.environment();
-						env.put("PATH", path);
-						while(true) {
-							Thread.sleep(100);
-							if(pBuilder.environment().get("PATH").contains(antDirectory + File.separator + "bin")
-									&& pBuilder.environment().get("PATH").contains(androidSDKDirectory + File.separator + "tools")
-									&& pBuilder.environment().get("PATH").contains(androidSDKDirectory + File.separator + "platform-tools")) {
-								break;
-							}
-						}
-						monitor.worked(1);
-
-						monitor.subTask("Building Web app to Mobile Web app");
-						pBuilder.redirectErrorStream(true);
-						pBuilder.directory(projectDir);
-						Process proc = pBuilder.start();
-						BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-						String line = null;
-						stream.println("Building " + packagename + "\n\n");
-						while((line = in.readLine()) != null) {
-							stream.println(line);
-							if(monitor.isCanceled()) {
-								stream.println("Building is cancelled.");
-								return Status.CANCEL_STATUS;
-							}
-						}
-						stream.println("\n\nBuild finished.");
-						monitor.worked(1);
-
-						project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-						monitor.worked(1);
-					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (CoreException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} finally {
-						if(manifestReader != null) {
-							try {
-								manifestReader.close();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						monitor.done();
-					}
-
-					return Status.OK_STATUS;
-				}
-				
-			};
 			job.setUser(true);
 			job.schedule();
 
 		}
 		return null;
+	}
+	
+	private Job generalBuild(IProject project){
+		
+		Shell shell = Display.getDefault().getActiveShell();
+		File projectDir = new File(project.getLocation().toString());
+		
+		String pythonPath = WebCLSDKPreferencePage.getPythonPath();
+		if(pythonPath == null || pythonPath.isEmpty()) {
+			MessageDialog.openWarning(shell, "HighWeb Warning - Python Path",
+                    "Python 寃쎈줈媛� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
+                    + "Window - Preferences - HighWeb Tool �뿉�꽌 Python 寃쎈줈瑜� �꽭�똿�빐 二쇱꽭�슂");
+			return null;
+		}
+		
+		String antDirectory = WebCLSDKPreferencePage.getAntDirectory();
+		if(antDirectory == null || antDirectory.isEmpty()) {
+			MessageDialog.openWarning(shell, "HighWeb Warning - Ant Directory",
+                    "Ant �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
+                    + "Window - Preferences - HighWeb Tool �뿉�꽌 Ant �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
+			return null;
+		}
+
+		String androidSDKDirectory = WebCLSDKPreferencePage.getAndroidSDKDirectory();
+		if(androidSDKDirectory == null || androidSDKDirectory.isEmpty()) {
+			MessageDialog.openWarning(shell, "HighWeb Warning - Android SDK Directory",
+                    "Android SDK �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
+                    + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
+			return null;
+		}
+
+		String crosswalkDirectory = WebCLSDKPreferencePage.getCrosswalkDirectory();
+		if(crosswalkDirectory == null || crosswalkDirectory.isEmpty()) {
+			MessageDialog.openWarning(shell, "HighWeb Warning - Android SDK Directory",
+                    "Android SDK �뵒�젆�넗由ш� �꽭�똿�릺�뼱 �엳吏� �븡�뒿�땲�떎.\n"
+                    + "Window - Preferences - HighWeb Tool �뿉�꽌 Android SDK �뵒�젆�넗由щ�� �꽭�똿�빐 二쇱꽭�슂");
+			return null;
+		}
+		
+		return new Job("Build HighWeb Application") {
+
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				// TODO Auto-generated method stub
+				monitor.beginTask("Build HighWeb Application", 4);
+				String path = System.getenv("path");
+				String tempPath = new String(path);
+				StringBuffer pathbuf = new StringBuffer(path);
+				if(!path.endsWith(";")) {
+					pathbuf.append(';');
+				}
+				pathbuf.append(antDirectory + File.separator + "bin")
+					.append(';').append(androidSDKDirectory + File.separator + "tools")
+					.append(';').append(androidSDKDirectory + File.separator + "platform-tools");
+				path = pathbuf.toString();
+				monitor.worked(1);
+
+				String manifestPath = projectDir.getAbsolutePath() + File.separator + "WebContent" + File.separator + "manifest.json";
+				FileReader manifestReader = null;
+				try {
+					manifestReader = new FileReader(new File(manifestPath));
+					char[] cbuf = new char[32];
+					StringBuffer sb = new StringBuffer();
+					int i;
+					while((i = manifestReader.read(cbuf)) != -1) {
+						sb.append(cbuf, 0, i);
+					}
+
+					JSONObject manifestObj = new JSONObject(sb.toString());
+					String packagename = (String) manifestObj.get("package");
+
+					String[] args = new String[] {
+							"cmd.exe",
+							"/C",
+							pythonPath,
+							crosswalkDirectory + File.separator + "make_apk.py",
+							"--package=" + packagename,
+							"--manifest=WebContent/manifest.json"
+					};
+					MessageConsole console = new MessageConsole("HighWeb Application Build", null);
+					ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] {console});
+					ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);
+					MessageConsoleStream stream = console.newMessageStream();
+					ProcessBuilder pBuilder = new ProcessBuilder(args);
+					Map<String,String> env = pBuilder.environment();
+					env.put("PATH", path);
+					while(true) {
+						Thread.sleep(100);
+						if(pBuilder.environment().get("PATH").contains(antDirectory + File.separator + "bin")
+								&& pBuilder.environment().get("PATH").contains(androidSDKDirectory + File.separator + "tools")
+								&& pBuilder.environment().get("PATH").contains(androidSDKDirectory + File.separator + "platform-tools")) {
+							break;
+						}
+					}
+					monitor.worked(1);
+
+					monitor.subTask("Building Web app to Mobile Web app");
+					pBuilder.redirectErrorStream(true);
+					pBuilder.directory(projectDir);
+					Process proc = pBuilder.start();
+					BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+					String line = null;
+					stream.println("Building " + packagename + "\n\n");
+					while((line = in.readLine()) != null) {
+						stream.println(line);
+						if(monitor.isCanceled()) {
+							stream.println("Building is cancelled.");
+							return Status.CANCEL_STATUS;
+						}
+					}
+					stream.println("\n\nBuild finished.");
+					monitor.worked(1);
+
+					project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+					monitor.worked(1);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} finally {
+					if(manifestReader != null) {
+						try {
+							manifestReader.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					monitor.done();
+				}
+
+				return Status.OK_STATUS;
+			}
+			
+		};
+	}
+	
+	private Job nodeBuild(String fileName, IProject project){
+		
+		Shell shell = Display.getDefault().getActiveShell();
+		String nodePath = System.getProperty("user.dir") + "\\NodeServer";	
+		File indexFile = new File(project.getLocation().toString() + "\\WebContent\\index.html");
+		if(!indexFile.exists()){
+			MessageDialog.openWarning(shell, "HighWeb Warning - " + fileName,
+                    fileName + " is not Existed!.\n"
+                    + "New High Web Project - Project Name: " + fileName);
+			return null;
+		}
+		
+		return new Job("Build HighWeb Application"){
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				FileInputStream fis = null;
+				FileOutputStream fos = null;
+				try {
+					// TODO Auto-generated method stub
+					monitor.beginTask("Build HighWeb Application", 4);
+					monitor.worked(1);
+					fis = new FileInputStream(indexFile);
+					fos = new FileOutputStream(nodePath + "\\" + fileName);
+					monitor.worked(1);
+
+					monitor.subTask("Building Web app to Mobile Web app");
+					monitor.worked(1);
+					int data = 0;
+					while((data=fis.read())!=-1) {
+						fos.write(data);
+					}
+
+					monitor.worked(1);
+					monitor.done();
+
+					return Status.OK_STATUS;
+				} catch (FileNotFoundException e) {
+					return Status.CANCEL_STATUS;
+				} catch (IOException e) {
+					return Status.CANCEL_STATUS;
+				} finally{
+					try {
+						if(fis != null) fis.close();
+						if(fos != null) fos.close();
+					} catch (Exception e2) {
+						// TODO: handle exception
+					}
+				}
+			}
+		};
 	}
 
 }
