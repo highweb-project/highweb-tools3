@@ -41,8 +41,6 @@ public class MultiExecutorFunction extends Dialog{
 		if(nodeServer!= null)
 			nodeServer.close();
 		
-		commandADB("kill-server");
-		
 		return super.close();
 	}
 	

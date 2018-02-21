@@ -2,7 +2,7 @@
 <feature
       id="org.highweb.webclsdk.feature"
       label="High WebTool WebCL SDK"
-      version="2.0.4.qualifier"
+      version="2.1.0.qualifier"
       provider-name="MUTECSOFT"
       plugin="org.highweb.webclsdk">
 
