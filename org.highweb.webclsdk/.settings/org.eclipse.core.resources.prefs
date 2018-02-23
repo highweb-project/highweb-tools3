@@ -1,4 +1,7 @@
 eclipse.preferences.version=1
+encoding//NodeServer/builds/Reciver/WebContent/index.html=UTF-8
+encoding//NodeServer/builds/Sender/WebContent/index.html=UTF-8
+encoding//NodeServer/sender.html=UTF-8
 encoding//src/org/highweb/webclsdk/editors/CLEditor.java=UTF-8
 encoding//src/org/highweb/webclsdk/handlers/HighWebAppBuildHandler.java=UTF-8
 encoding//src/org/highweb/webclsdk/handlers/HighWebAppRunHandler.java=UTF-8

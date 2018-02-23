@@ -3,7 +3,61 @@
 <head>
     <meta charset="utf-8">
     <title>Sender</title>
-<link rel='stylesheet' href='css/main.css'>
+<style>
+html,
+body{
+    margin: 0;
+    padding: 10px 20px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: 17px
+}
+.chatbox{}
+.wrapper{
+    margin: 10px 0 0;
+    text-align: center
+}
+.data-input,
+.console{
+    border: 1px solid #d0d0d0;
+    font-size: inherit;
+    outline-color: #8D6E63
+}
+.data-input{
+    width: 80%;
+    height: 40px
+}
+.button{
+    width: 15%;
+    height: 40px;
+    border: none;
+    background-color: #A1887F;
+    font-size: inherit;
+    outline: none
+}
+.button:hover{
+    background-color: #BCAAA4
+}
+.button:active{
+    background-color: #8D6E63
+}
+.describe{
+
+}
+
+.console{
+    width: 96%;
+    height: 50vh;
+    cursor: unset;
+    resize: none
+}
+@media (max-width: 430px){
+    html,
+    body{
+        font-size: 12px
+    }
+}
+
+</style>
 </head>
 <body>
 <section id="chatbox" class="chatbox">
@@ -22,8 +76,31 @@
 </section>
 </body>
 <script src='socket.io/socket.io.js'></script>
-<script src="js/main.js"></script>
 <script>
+
+const log = (_=> {
+  const consoleTextArea = document.getElementById('console');
+  const log = arg => consoleTextArea.value += `[${new Date().toISOString().substring(11, 19)}]${arg}\n`;
+  return {
+      error: arg => log(`[ERROR] ${arg}`),
+      info: arg => log(`[INFO] ${arg}`)
+  }
+})();
+
+const socket = io.connect();
+
+socket.on('created', room=>{
+  log.info(`Crated '${room}' room`);
+});
+
+socket.on('join', room=>{
+  log.info(`Someone joined '${room}' room`);
+});
+
+socket.on('joined', room=>{
+  log.info(`Joined '${room}' room`);
+});
+
 
 const roomInput = document.getElementById('room-name');
 const rommTitle = roomInput.value.trim();
@@ -36,7 +113,7 @@ const joinEvent = () =>{
         roomInput.disabled = true;
         socket.emit('create or join', roomTitle);
     }else{
-        log.error("�젒�냽�븷 梨꾨꼸�쓣 �엯�젰�빐二쇱꽭�슂.");
+        log.error("접속할 채널을 입력해주세요.");
         roomInput.focus();
     }
 };
@@ -51,7 +128,7 @@ sendButton.onclick = () => {
         log.info(`Sended '${date}, ${data}'`);
         socket.emit('message', roomTitle, JSON.stringify({date:date, data:data}));
     }else{
-        log.error("�쟾�넚�븷 �궡�슜�쓣 �엯�젰�빐二쇱꽭�슂.");
+        log.error("전송할 내용을 입력해주세요.");
         dataInput.focus();
     }
 };

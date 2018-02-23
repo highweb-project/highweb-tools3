@@ -10,8 +10,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
+import org.eclipse.cdt.internal.core.envvar.BuildSystemEnvironmentSupplier;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -42,8 +47,11 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.highweb.webclsdk.preferences.WebCLSDKPreferencePage;
+import org.highweb.webclsdk.views.dialog.BuildSelectDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import sun.security.provider.DSAPublicKeyImpl;
 
 public class HighWebAppBuildHandler extends AbstractHandler {
 
@@ -66,20 +74,24 @@ public class HighWebAppBuildHandler extends AbstractHandler {
 			Object firstSegmentObj = treePath.getFirstSegment();
 
 			IProject project = (IProject) ((IAdaptable) firstSegmentObj).getAdapter(IProject.class);
-			String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+			//String workspacePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 			//File projectDir = new File(workspacePath + File.separator + project.getName());
 			
-			
-			Job job;
-			switch (project.getName()) {
-				case "Sender": job = nodeBuild("sender.html", project); break;
-				case "Reciver": job = nodeBuild("reciver.html", project); break;
-				default: job = generalBuild(project); break;
+			BuildSelectDialog buildSelectDialog = new BuildSelectDialog(Display.getDefault().getActiveShell());
+			if(buildSelectDialog.open() == 0){
+				Job job = null;
+				switch (buildSelectDialog.getSelected_Type()) {
+					case "General": job = generalBuild(project); break;
+					case "Multi Excutor": job = nodeBuild(project); break;
+					default: break;
+				}
+				
+				if(job != null){
+					job.setUser(true);
+					job.schedule();
+				}
 			}
 			
-			job.setUser(true);
-			job.schedule();
-
 		}
 		return null;
 	}
@@ -230,56 +242,80 @@ public class HighWebAppBuildHandler extends AbstractHandler {
 		};
 	}
 	
-	private Job nodeBuild(String fileName, IProject project){
+	private Job nodeBuild(IProject project){
 		
-		Shell shell = Display.getDefault().getActiveShell();
-		String nodePath = System.getProperty("user.dir") + "\\NodeServer";	
-		File indexFile = new File(project.getLocation().toString() + "\\WebContent\\index.html");
-		if(!indexFile.exists()){
-			MessageDialog.openWarning(shell, "HighWeb Warning - " + fileName,
-                    fileName + " is not Existed!.\n"
-                    + "New High Web Project - Project Name: " + fileName);
-			return null;
-		}
+		final String nodePath = System.getProperty("user.dir") + "\\NodeServer\\builds";
 		
 		return new Job("Build HighWeb Application"){
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				FileInputStream fis = null;
-				FileOutputStream fos = null;
-				try {
-					// TODO Auto-generated method stub
-					monitor.beginTask("Build HighWeb Application", 4);
-					monitor.worked(1);
-					fis = new FileInputStream(indexFile);
-					fos = new FileOutputStream(nodePath + "\\" + fileName);
-					monitor.worked(1);
+				// TODO Auto-generated method stub
+				monitor.beginTask("Build HighWeb Application", 4);
+				monitor.worked(1);
+				
+				monitor.worked(1);
 
-					monitor.subTask("Building Web app to Mobile Web app");
-					monitor.worked(1);
-					int data = 0;
-					while((data=fis.read())!=-1) {
-						fos.write(data);
-					}
+				monitor.subTask("Building Web app to Mobile Web app");
+				monitor.worked(1);
+				
+				copy(new File(project.getLocationURI()),  new File(nodePath));
+				monitor.worked(1);
+				monitor.done();
 
-					monitor.worked(1);
-					monitor.done();
-
-					return Status.OK_STATUS;
-				} catch (FileNotFoundException e) {
-					return Status.CANCEL_STATUS;
-				} catch (IOException e) {
-					return Status.CANCEL_STATUS;
-				} finally{
-					try {
-						if(fis != null) fis.close();
-						if(fos != null) fos.close();
-					} catch (Exception e2) {
-						// TODO: handle exception
-					}
-				}
+				return Status.OK_STATUS;
 			}
 		};
+	}
+	
+	private void copy(File copy, File pastePath){
+		if(!copy.exists() || !copy.isDirectory()) return; //error
+		if(!pastePath.exists() || !pastePath.isDirectory()) return; //error
+		
+		pastePath = copyDirectory(copy, pastePath);
+		
+		Queue<File> queue = new LinkedList<>();
+		do{
+			File [] children = copy.listFiles();
+			for(File child : children){
+				if(child.isDirectory()){
+					queue.add(child);
+					queue.add(copyDirectory(child, pastePath));
+				}
+				else{
+					copyFile(child, pastePath);
+				}
+			}
+			
+			copy = queue.poll();
+			pastePath = queue.poll();
+		}while(copy != null);
+		 
+	}
+	
+	private File copyDirectory(File copy, File pastePath){
+		File paste = new File(pastePath.getAbsolutePath() + "\\" + copy.getName());
+		if(paste.exists()) paste.delete();
+		paste.mkdir();
+		return paste;
+	}
+	
+	private void copyFile(File copy, File pastePath){
+		FileInputStream fis = null;
+		FileOutputStream fos = null;
+		try {
+			fis = new FileInputStream(copy);
+			fos = new FileOutputStream(new File(pastePath.getAbsolutePath() + "\\" + copy.getName()));
+			
+			int data = 0;
+			while((data = fis.read()) > 0) fos.write(data);
+		} catch (IOException e) {
+			
+		}finally {
+			try {
+				if(fis != null) fis.close();
+				if(fos != null) fos.close();
+			} catch (Exception e2) {}
+		}
 	}
 
 }

@@ -34,6 +34,8 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 	private final String LOCAL_IP; 
 	private final String ADB_PORT = "5555";
 	
+	private final List<String> ProjectList;
+	
 	private MultiExcutorHandler handler;
 	
 	public MultiExecutorDialog(Shell parent, MultiExcutorHandler handler) throws UnknownError, UnknownHostException{
@@ -44,6 +46,8 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
     	setBlockOnOpen(false);
 		
 		LOCAL_IP = InetAddress.getLocalHost().getHostAddress();
+		
+		ProjectList = getProject();
 	}
 	
 	@Override
@@ -64,6 +68,19 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 	public boolean close() {
 		handler.init();
 		return super.close();
+	}
+	
+	private List<String> getProject(){
+		List<String> list = new ArrayList<>();
+		
+		final String nodePath = System.getProperty("user.dir") + "\\NodeServer\\builds";
+		File dir = new File(nodePath);
+		
+		for(File file : dir.listFiles())
+			if(file.isDirectory())
+				list.add(file.getName());
+		
+		return list;
 	}
 	
 	@Override
@@ -277,9 +294,9 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 			btnConn.setText(CONNECTION);
 			btnConn.setEnabled(false);
 			
-			final String [] comboTitles = {"None", SENDER, RECIVER};
-			if(property.getItems().length < 1)
-				for(String str : comboTitles) property.add(str);
+			property.add("None");
+			for(String str : ProjectList)
+				property.add(str);
 			property.select(0);
 		}
 		
@@ -325,17 +342,7 @@ public class MultiExecutorDialog extends MultiExecutorFunction {
 					
 				break;
 				case CONNECTION:
-						String pro = null;
-						switch (property.getText()) {
-							case SENDER:
-								pro = "sender.html";
-								break;
-							case RECIVER:
-								pro = "reciver.html";
-							default: break;
-						}
-						if(pro != null)
-							commandADB("-s", IP, "shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "http://"+LOCAL_IP+":2018/"+pro);
+						commandADB("-s", IP, "shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "http://"+LOCAL_IP+":2018/builds/"+property.getText() + "/WebContent/index.html");
 				break;
 			}
 		}
